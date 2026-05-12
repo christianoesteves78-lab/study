@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard - StudyAI</title>
+</head>
+<body>
+  <h1>Bienvenue sur ton dashboard StudyAI</h1>
+
+  <p id="userEmail"></p>
+
+  <input id="titre" type="text" placeholder="Titre du cours">
+  <input id="matiere" type="text" placeholder="Matière">
+  <input id="niveau" type="text" placeholder="Niveau">
+  <input id="fileInput" type="file">
+
+  <button onclick="uploadCours()">Envoyer mon cours</button>
+  <button onclick="deconnexion()">Se déconnecter</button>
+
+  <p id="message"></p>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "COLLE_ICI_TON_PROJECT_URL";
+    const SUPABASE_ANON_KEY = "COLLE_ICI_TA_ANON_KEY";
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function verifierUtilisateur() {
+      const { data } = await supabaseClient.auth.getUser();
+
+      if (!data.user) {
+        window.location.href = "connexion.html";
+      } else {
+        document.getElementById("userEmail").innerText = "Connecté : " + data.user.email;
+      }
+    }
+
+    async function uploadCours() {
+      const { data: userData } = await supabaseClient.auth.getUser();
+      const user = userData.user;
+
+      if (!user) {
+        window.location.href = "connexion.html";
+        return;
+      }
+
+      const file = document.getElementById("fileInput").files[0];
+      const titre = document.getElementById("titre").value;
+      const matiere = document.getElementById("matiere").value;
+      const niveau = document.getElementById("niveau").value;
+
+      if (!file) {
+        document.getElementById("message").innerText = "Ajoute un fichier.";
+        return;
+      }
+
+      const filePath = `${user.id}/${Date.now()}-${file.name}`;
+
+      const { data: uploadData, error: uploadError } = await supabaseClient
+        .storage
+        .from("uploads")
+        .upload(filePath, file);
+
+      if (uploadError) {
+        document.getElementById("message").innerText = uploadError.message;
+        return;
+      }
+
+      const fichierUrl = `${SUPABASE_URL}/storage/v1/object/public/uploads/${filePath}`;
+
+      const { error: insertError } = await supabaseClient
+        .from("cours")
+        .insert({
+          user_id: user.id,
+          titre: titre,
+          matiere: matiere,
+          niveau: niveau,
+          fichier_url: fichierUrl
+        });
+
+      if (insertError) {
+        document.getElementById("message").innerText = insertError.message;
+      } else {
+        document.getElementById("message").innerText = "Cours envoyé avec succès.";
+      }
+    }
+
+    async function deconnexion() {
+      await supabaseClient.auth.signOut();
+      window.location.href = "connexion.html";
+    }
+
+    verifierUtilisateur();
+  </script>
+</body>
+</html>
