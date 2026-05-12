@@ -2075,5 +2075,12 @@
     });
   }
 </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = "https://lfewaujyeytoirbeekem.supabase.co";
+  const SUPABASE_ANON_KEY = "CeyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmZXdhdWp5ZXl0b2lyYmVla2VtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2MTAwNTcsImV4cCI6MjA5NDE4NjA1N30.yZxZH6MXs5vURcYYSLAL5G6ykVlspXltjvtVRSWyUXM";
+
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
 </body>
 </html>
